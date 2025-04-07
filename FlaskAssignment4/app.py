@@ -47,8 +47,14 @@ def kunwariLogin():
 #         ...
 
 #     return render_template("todo.html", tasks=tasks)
-
-   
+tasks = []
+@app.route('/todo', methods = ['GET', 'POST'])
+def todo():
+    if request.method == "POST":
+        cred = request.form
+        tasks.append(cred['task'])
+        return render_template("todo.html", tasks=tasks)
+    return render_template("todo.html")
 
 
 if __name__ == "__main__":

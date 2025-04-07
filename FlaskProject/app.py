@@ -13,13 +13,16 @@ import hashlib
 # Follow the 'https://cs50.readthedocs.io/libraries/cs50/python/' docs and look for sqlite `SQL` method
 # db = SQL("sqlite:///___")
 
+db = SQL("sqlite:///user.db")
+
 app = Flask(__name__)
 # TODO 2: generate a strong secret key
 # You can open a new terminal and copy+paste this code 
 # python -c 'import secrets; print(secrets.token_hex())'
 # Place the output as the value for app.secret_key
 # We need the secret key to make our server-side session secure
-app.secret_key = '___'
+
+app.secret_key = '23d6ed53b019670956028f3d4942675a945d77991612d8fdd83076632d140513'
 
 @app.route('/')
 def home():
@@ -45,7 +48,7 @@ def login():
         try:
             # TODO 3: use db.execute to get the user record referencing user's email, name this variable as user
             # user = db.execute("SELECT * FROM ____ WHERE ___=?", ____)
-            
+            user = db.execute("SELECT * FROM user WHERE email=?", email)
             if len(user) != 1:
                 return 'Invalid email', 400
 
@@ -80,6 +83,8 @@ def signup():
             # TODO 4: use db.execute to get the user record referencing user's email, name this variable as user
             # user = db.execute('SELECT * FROM ___ WHERE ____=? ', __)
             
+            user = db.execute('SELECT * FROM user where email=?', email)
+
             if user:
                 return 'Email already exists', 400
             
@@ -88,7 +93,7 @@ def signup():
 
             # TODO 5: insert the email and hash to the database
             # db.execute('INSERT INTO __(__, ___, __) VALUES(?, ?, ?)', ___, __, ___)
-
+            db.execute('INSERT INTO user (email, password, username) VALUES (?, ?, ?)', email, hash, username)
             # add user to session
             session['user'] = {'email': email, 'username': username}
 
@@ -116,6 +121,7 @@ def update_username():
     
     # TODO 6: update the username
     # db.execute('UPDATE ___ SET _____=? WHERE _____=?', ______, session['user']['email'])
+    db.execute('UPDATE user SET username=? WHERE email=?', username, session['user']['email'])
     session['user']['username'] = username
     session.modified = True
 
@@ -135,7 +141,7 @@ def update_password():
     hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(password.encode('utf-8')).digest()), bcrypt.gensalt())
     # TODO 7: update the password
     # db.execute('UPDATE ___ SET _____=? WHERE _____=?', _____, session['user']['email'])
-
+    db.execute ('UPDATE user SET password=? WHERE email=?', hash, session['user']['email'])
     return redirect(url_for('settings'))
 
 
@@ -146,6 +152,7 @@ def delete_account():
     
     # TODO 8: update the username
     # db.execute('DELETE FROM _____ WHERE ____=?', session['user']['email'])
+    db.execute('DELETE FROM user WHERE email=?', session['user']['email'])
     session.pop('user', None)
     return redirect(url_for('login'))
 
